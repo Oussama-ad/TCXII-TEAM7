@@ -1,4 +1,3 @@
-
 import jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
@@ -18,6 +17,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 100
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# ✅ ADD THIS - Token blacklist for logout functionality
+token_blacklist = set()
 
 
 # ---------- MOTS DE PASSE (VERSION SIMPLE SANS HASH) ----------
@@ -65,6 +67,14 @@ def get_current_agent(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+    # ✅ ADD THIS - Check if token is blacklisted
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token révoqué. Veuillez vous reconnecter.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         agent_id: Optional[int] = None
@@ -95,6 +105,15 @@ def verify_token(token: str, db: Session) -> models.Agent:
         detail="Identifiants invalides",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    # ✅ ADD THIS - Check if token is blacklisted
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token révoqué. Veuillez vous reconnecter.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         sub = payload.get("sub")

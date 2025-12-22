@@ -8,7 +8,7 @@ from auth.security import verify_token
 import logging
 from sqlalchemy import text
 
-#test
+#test the api connection to the database
 # Logging setup — uvicorn will capture these logs too
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("doxa")

@@ -58,3 +58,11 @@ class CallSession(Base):
 
     
     agent = relationship("Agent", back_populates="call_sessions")
+
+class kbase_entry(Base):
+    __tablename__ = "kbase_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)    
+

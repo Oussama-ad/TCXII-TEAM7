@@ -1,16 +1,53 @@
 from fastapi import APIRouter
 from pathlib import Path
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from fastapi import Depends
+from database import get_db
+import models
 
 router = APIRouter(prefix="/kb", tags=["kb"])
 
-PDF_DIR = Path("uploads/kb")  # dossier où sont déjà les PDF
+class kbentry_payload(BaseModel):
+    question: str
+    answer: str
 
-@router.get("/documents")
-def list_pdfs():
-    files = []
-    for path in PDF_DIR.glob("*.pdf"):
-        files.append({
-            "name": path.name,
-            "url": f"/kb/documents/{path.name}/pdf"
-        })
-    return files
+
+@router.post("/", status_code=201)
+def create_kb_entry(
+    payload: kbentry_payload,
+    db: Session = Depends(get_db),
+):
+    kb_entry = models.kbase_entry(
+        question=payload.question,
+        answer=payload.answer,
+    )
+    db.add(kb_entry)
+    db.commit()
+    db.refresh(kb_entry)
+    return {"id": kb_entry.id, "question": kb_entry.question, "answer": kb_entry.answer , "message": "Knowledge base entry created successfully."}
+    
+@router.get("/", status_code=200)
+def list_kb(db: Session = Depends(get_db)): 
+    kb_entries = db.query(models.kbase_entry).all()
+    return kb_entries    
+
+@router.delete("/{kb_id}", status_code=200)
+def delete_kb_entry(kb_id:int , db : Session = Depends(get_db)):
+    kb_entry = db.query(models.kbase_entry).filter(models.kbase_entry.id == kb_id).first()
+    if not kb_entry:
+        return {"message": "Knowledge base entry not found."}
+    db.delete(kb_entry)
+    db.commit()
+    return {"message": "Knowledge base entry deleted successfully."}
+
+@router.put("/{kb_id}", status_code=200)
+def update_kb_entry(kb_id:int, payload: kbentry_payload, db : Session = Depends(get_db)):
+    kb_entry = db.query(models.kbase_entry).filter(models.kbase_entry.id == kb_id).first()
+    if not kb_entry:
+        return {"message": "Knowledge base entry not found."}
+    kb_entry.question = payload.question
+    kb_entry.answer = payload.answer
+    db.commit()
+    db.refresh(kb_entry)
+    return {"id": kb_entry.id, "question": kb_entry.question, "answer": kb_entry.answer , "message": "Knowledge base entry updated successfully."}

@@ -88,3 +88,10 @@ async def jwt_auth_middleware(request: Request, call_next):
 
 app.include_router(api_router)
 
+
+if __name__ == "__main__":
+    # Run with: python main.py  (binds to 0.0.0.0)
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=7000, reload=True)
+
+

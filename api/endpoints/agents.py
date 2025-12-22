@@ -45,8 +45,13 @@ class AdminCreate(BaseModel):
 # --------- ROUTES ---------
 
 # CREATE
+
+@router.get("/")
+def test_agent_route():
+    return {"message": "Agent route is working."}
+
 @router.post(
-    "/",
+    "/add",
     response_model=AgentRead,
     status_code=status.HTTP_201_CREATED,
 )
@@ -80,14 +85,14 @@ def create_agent(agent_in: AgentCreate, db: Session = Depends(get_db)):
 
 
 # LIST
-@router.get("/", response_model=List[AgentRead])
+@router.get("/all", response_model=List[AgentRead])
 def list_agents(db: Session = Depends(get_db)):
     agents = db.query(models.Agent).all()
     return agents
 
 
 # GET by id
-@router.get("/{agent_id}", response_model=AgentRead)
+@router.get("/agent/{agent_id}", response_model=AgentRead)
 def get_agent(agent_id: int, db: Session = Depends(get_db)):
     agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
     if not agent:
@@ -99,7 +104,7 @@ def get_agent(agent_id: int, db: Session = Depends(get_db)):
 
 
 # UPDATE (PUT partiel)
-@router.put("/{agent_id}", response_model=AgentRead)
+@router.put("/modify/{agent_id}", response_model=AgentRead)
 def update_agent(
     agent_id: int,
     agent_in: AgentUpdate,
@@ -142,7 +147,7 @@ def update_agent(
 
 
 # DELETE
-@router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_agent(agent_id: int, db: Session = Depends(get_db)):
     agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
     if not agent:

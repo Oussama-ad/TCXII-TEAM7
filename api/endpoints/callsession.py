@@ -66,7 +66,7 @@ def create_call_session(
 
 
 # LIST : tout agent peut voir TOUTES les sessions
-@router.get("/", response_model=List[CallSessionRead])
+@router.get("/all", response_model=List[CallSessionRead])
 def list_all_call_sessions(
     db: Session = Depends(get_db),
     current_agent: models.Agent = Depends(get_current_agent),
@@ -80,7 +80,7 @@ def list_all_call_sessions(
 
 
 # GET by id : retourner n'importe quelle session
-@router.get("/{session_id}", response_model=CallSessionRead)
+@router.get("/session/{session_id}", response_model=CallSessionRead)
 def get_call_session(
     session_id: int,
     db: Session = Depends(get_db),
@@ -100,7 +100,7 @@ def get_call_session(
 
 
 # UPDATE : seul un admin peut modifier une session
-@router.put("/{session_id}", response_model=CallSessionRead)
+@router.put("/update/{session_id}", response_model=CallSessionRead)
 def update_call_session(
     session_id: int,
     session_in: CallSessionCreate,
@@ -132,7 +132,7 @@ def update_call_session(
 
 
 # DELETE : seul un admin peut supprimer une session
-@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_call_session(
     session_id: int,
     db: Session = Depends(get_db),

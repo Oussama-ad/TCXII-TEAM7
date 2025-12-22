@@ -20,7 +20,7 @@ class kbentry_payload(BaseModel):
     category: Optional[str] = None
 
 
-@router.post("/", status_code=201)
+@router.post("/add", status_code=201)
 def create_kb_entry(
     payload: kbentry_payload,
     db: Session = Depends(get_db),
@@ -41,13 +41,13 @@ def create_kb_entry(
         "category": kb_entry.category,
         "message": "Knowledge base entry created successfully.",
     }
-    
-@router.get("/", status_code=200)
+
+@router.get("/all", status_code=200)
 def list_kb(db: Session = Depends(get_db), current_agent: models.Agent = Depends(get_current_agent)): 
     kb_entries = db.query(models.kbase_entry).all()
     return kb_entries    
 
-@router.delete("/{kb_id}", status_code=200)
+@router.delete("/delete/{kb_id}", status_code=200)
 def delete_kb_entry(kb_id:int , db : Session = Depends(get_db)):
     kb_entry = db.query(models.kbase_entry).filter(models.kbase_entry.id == kb_id).first()
     if not kb_entry:
@@ -56,7 +56,7 @@ def delete_kb_entry(kb_id:int , db : Session = Depends(get_db)):
     db.commit()
     return {"message": "Knowledge base entry deleted successfully."}
 
-@router.put("/{kb_id}", status_code=200)
+@router.put("/update/{kb_id}", status_code=200)
 def update_kb_entry(kb_id:int, payload: kbentry_payload, db : Session = Depends(get_db)):
     kb_entry = db.query(models.kbase_entry).filter(models.kbase_entry.id == kb_id).first()
     if not kb_entry:
